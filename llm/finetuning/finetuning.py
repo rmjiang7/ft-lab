@@ -13,13 +13,13 @@ dataset = load_dataset("databricks/databricks-dolly-15k", split="train")
 
 def format_instruction(sample):
 	return f"""### Instruction:
-Use the Input below to create an instruction, which could have been used to generate the input using an LLM.
+Use the following Input and come up with a structured response.
 
 ### Input:
-{sample['response']}
+{sample['instruction']}
 
 ### Response:
-{sample['instruction']}
+{sample['response']}
 """
 
 # Hugging Face model id

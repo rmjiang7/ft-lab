@@ -40,7 +40,7 @@ else:
 
 # Prepare the input for for tokenization, attach any prompt that should be needed
 PROMPT_TEMPLATE = """### Instruction:
-Use the Input below to create an instruction, which could have been used to generate the input using an LLM.
+Use the following Input and come up with a structured response.
 
 ### Input:
 {instruction}

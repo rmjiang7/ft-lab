@@ -101,4 +101,4 @@ def generate_stream():
     
     return Response(stream_with_context(f()), mimetype = "text/event-stream")
 
-app.run(host="0.0.0.0", port = 8081)
+app.run(host="0.0.0.0", port = 7861)
