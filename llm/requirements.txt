@@ -7,3 +7,4 @@ trl==0.4.7
 safetensors>=0.3.1
 lm-eval
 gradio
+flask
