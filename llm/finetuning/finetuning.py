@@ -5,13 +5,11 @@ from transformers import TrainingArguments
 import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
 from trl import SFTTrainer
+from peft import LoraConfig, prepare_model_for_kbit_training, get_peft_model
 import time 
 
 # Load dataset from the hub
 dataset = load_dataset("databricks/databricks-dolly-15k", split="train")
-
-print(f"dataset size: {len(dataset)}")
-# dataset size: 15011
 
 def format_instruction(sample):
 	return f"""### Instruction:
@@ -24,20 +22,8 @@ Use the Input below to create an instruction, which could have been used to gene
 {sample['instruction']}
 """
 
-use_flash_attention = False
-# COMMENT IN TO USE FLASH ATTENTION
-# replace attention with flash attention
-# if torch.cuda.get_device_capability()[0] >= 8:
-#     from utils.llama_patch import replace_attn_with_flash_attn
-#     print("Using flash attention")
-#     replace_attn_with_flash_attn()
-#     use_flash_attention = True
-
-
 # Hugging Face model id
 model_id = "NousResearch/Llama-2-7b-hf" # non-gated
-# model_id = "meta-llama/Llama-2-7b-hf" # gated
-
 
 # BitsAndBytesConfig int-4 config
 bnb_config = BitsAndBytesConfig(
@@ -51,17 +37,9 @@ bnb_config = BitsAndBytesConfig(
 model = AutoModelForCausalLM.from_pretrained(model_id, quantization_config=bnb_config, use_cache=False, device_map="auto")
 model.config.pretraining_tp = 1
 
-# Validate that the model is using flash attention, by comparing doc strings
-if use_flash_attention:
-    from utils.llama_patch import forward
-    assert model.model.layers[0].self_attn.forward.__doc__ == forward.__doc__, "Model is not using flash attention"
-
-
 tokenizer = AutoTokenizer.from_pretrained(model_id)
 tokenizer.pad_token = tokenizer.eos_token
 tokenizer.padding_side = "right"
-
-from peft import LoraConfig, prepare_model_for_kbit_training, get_peft_model
 
 # LoRA config based on QLoRA paper
 peft_config = LoraConfig(
@@ -72,7 +50,6 @@ peft_config = LoraConfig(
         task_type="CAUSAL_LM",
 )
 
-
 # prepare model for training
 model = prepare_model_for_kbit_training(model)
 model = get_peft_model(model, peft_config)
@@ -81,7 +58,7 @@ model = get_peft_model(model, peft_config)
 args = TrainingArguments(
     output_dir="llama-7-int4-dolly",
     num_train_epochs=3,
-    per_device_train_batch_size=6 if use_flash_attention else 4,
+    per_device_train_batch_size=6,
     gradient_accumulation_steps=2,
     gradient_checkpointing=True,
     optim="paged_adamw_32bit",

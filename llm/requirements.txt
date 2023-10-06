@@ -6,3 +6,4 @@ bitsandbytes==0.40.2
 trl==0.4.7
 safetensors>=0.3.1
 lm-eval
+gradio
