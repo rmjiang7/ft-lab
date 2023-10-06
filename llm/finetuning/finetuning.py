@@ -34,7 +34,11 @@ bnb_config = BitsAndBytesConfig(
 )
 
 # Load model and tokenizer
-model = AutoModelForCausalLM.from_pretrained(model_id, quantization_config=bnb_config, use_cache=False, device_map="auto")
+model = AutoModelForCausalLM.from_pretrained(
+	model_id, 
+	quantization_config=bnb_config, 
+	use_cache=False, 
+	device_map="auto")
 model.config.pretraining_tp = 1
 
 tokenizer = AutoTokenizer.from_pretrained(model_id)
@@ -58,7 +62,7 @@ model = get_peft_model(model, peft_config)
 args = TrainingArguments(
     output_dir="llama-7-int4-dolly",
     num_train_epochs=3,
-    per_device_train_batch_size=6,
+    per_device_train_batch_size=4,
     gradient_accumulation_steps=2,
     gradient_checkpointing=True,
     optim="paged_adamw_32bit",
