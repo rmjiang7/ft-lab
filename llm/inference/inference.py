@@ -28,7 +28,7 @@ if args.lora_path:
         torch_dtype=torch.float16,
         load_in_4bit=True,
     )
-    tokenier = AutoTokenizer.from_pretrained(args.lora_path)
+    tokenizer = AutoTokenizer.from_pretrained(args.lora_path)
 else:
     model = AutoModelForCausalLM.from_pretrained(
         args.model_path_or_id,
