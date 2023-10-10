@@ -60,6 +60,6 @@ python flask_api.py
 This api will be hosted at "http://localhost:8081" and have 2 endpoints `/generate` and `/generate/stream` for text generation and streaming.
 
 ```
-curl -X POST -d '{"prompt" : "This is a test", "parameters" : {"max_new_tokens" : 100, "temperature" : 0.7, "do_sample" : true}}' http://localhost:8081/generate
-curl -N -X POST -d '{"prompt" : "This is a test", "parameters" : {"max_new_tokens" : 100, "temperature" : 0.7, "do_sample" : true}}' http://localhost:8081/generate/stream
+curl -X POST -d '{"prompt" : "This is a test", "parameters" : {"max_new_tokens" : 100, "temperature" : 0.7, "do_sample" : true}}' http://localhost:7861/generate
+curl -N -X POST -d '{"prompt" : "This is a test", "parameters" : {"max_new_tokens" : 100, "temperature" : 0.7, "do_sample" : true}}' http://localhost:7861/generate/stream
 ```
