@@ -68,4 +68,4 @@ with torch.inference_mode():
     )
 
 print(f"Prompt:\n{instruction}\n")
-print(f"Generated instruction:\n{tokenizer.batch_decode(outputs.detach().cpu().numpy(), skip_special_tokens=True)[0][len(instruction):]}")
+print(f"Generated Response:\n{tokenizer.batch_decode(outputs.detach().cpu().numpy(), skip_special_tokens=True)[0][len(PROMPT_TEMPLATE.format(instruction=instruction)):]}")

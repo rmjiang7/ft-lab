@@ -8,7 +8,7 @@ In this repo, we give you a few options for using pre-trained for fine-tuned mod
 
 - [Inference Script](#inference-script)
 
-  This script is a barebones wrapper around loading and calling a model from python.  Use this to build out applications further
+  This script is a barebones wrapper around loading and calling a model from python.  Use this to build out applications further.  You can also take a look at the `Inference_with_LLMs` notebook for running this interactively.
 
 - [Gradio Frontend](#gradio-frontend)
 
@@ -73,7 +73,7 @@ options:
 python flask_api.py
 ```
 
-This api will be hosted at "http://localhost:8081" and have 2 endpoints `/generate` and `/generate/stream` for text generation and streaming.
+This api will be hosted at "http://localhost:7861" and have 2 endpoints `/generate` and `/generate/stream` for text generation and streaming.
 
 ```
 curl -X POST -d '{"prompt" : "This is a test", "parameters" : {"max_new_tokens" : 100, "temperature" : 0.7, "do_sample" : true}}' http://localhost:7861/generate
