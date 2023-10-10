@@ -1,6 +1,22 @@
-### Inference Apps:
+### Inference Apps
 
-This directory contains a few example scripts of how to use a pre-trained or fine-tuned model.
+This directory contains a few simple starter scripts of how to use your pre-trained or fine-tuned models for inference in different application scenarios.
+
+# Inference of LLMs
+
+In this repo, we give you a few options for using pre-trained for fine-tuned models for inference. 
+
+- [Inference Script](#inference-script)
+
+  This script is a barebones wrapper around loading and calling a model from python.  Use this to build out applications further
+
+- [Gradio Frontend](#gradio-frontend)
+
+  This is a commonly used demo app for LLMs that deploys a pretty front-end for showing off inference for a model.
+
+- [Flask API](#flask-api)
+
+  This is a very simple flask api for spinning up an endpoint.  It supports generation via streaming and non-streaming.  It has very low throughput and concurrency due to the expensive nature of LLMs.
 
 ## Inference Script
 
