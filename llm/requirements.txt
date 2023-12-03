@@ -8,3 +8,9 @@ safetensors>=0.3.1
 lm-eval
 gradio
 flask
+pgvector
+sentence-transformers
+langchain
+psycopg2-binary
+tiktoken
+openai
