@@ -1,5 +1,0 @@
-pgvector
-sentence-transformers
-langchain
-psycopg2-binary
-tiktoken
