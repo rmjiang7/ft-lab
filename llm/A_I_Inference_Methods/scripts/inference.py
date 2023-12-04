@@ -8,7 +8,7 @@ parser = argparse.ArgumentParser()
 
 parser.add_argument("--model_path_or_id", 
                     type=str, 
-                    default = "NousResearch/Llama-2-7b-hf", 
+                    default = "mistralai/Mistral-7B-v0.1", 
                     required = False,
                     help = "Model ID or path to saved model")
 
@@ -20,38 +20,44 @@ parser.add_argument("--lora_path",
 
 args = parser.parse_args()
 
-if args.lora_path:
+if lora_path:
     # load base LLM model with PEFT Adapter
     model = AutoPeftModelForCausalLM.from_pretrained(
-        args.lora_path,
+        lora_path,
         low_cpu_mem_usage=True,
         torch_dtype=torch.float16,
+        bnb_4bit_compute_dtype=torch.float16,
         load_in_4bit=True,
     )
-    tokenizer = AutoTokenizer.from_pretrained(args.lora_path)
+    tokenizer = AutoTokenizer.from_pretrained(lora_path)
 else:
     model = AutoModelForCausalLM.from_pretrained(
-        args.model_path_or_id,
+        model_path_or_id,
         low_cpu_mem_usage=True,
         torch_dtype=torch.float16,
+        bnb_4bit_compute_dtype=torch.float16,
         load_in_4bit=True
     )
+    tokenizer = AutoTokenizer.from_pretrained(model_path_or_id)
     tokenizer = AutoTokenizer.from_pretrained(args.model_path_or_id)
 
 # Prepare the input for for tokenization, attach any prompt that should be needed
-PROMPT_TEMPLATE = """### Instruction:
-Use the following Input and come up with a structured response.
+PROMPT_TEMPLATE = """
+Use the following context to answer the question.
 
-### Input:
-{instruction}
+### Context:
+
+### Question:
+{question}
 
 ### Response:
 """
-instruction = "Tell me all of the moon phases."
+question = "Tell me all of the moon phases."
+prompt = PROMPT_TEMPLATE.format(question=question)
 
 # Tokenize the input
 input_ids = tokenizer(
-    PROMPT_TEMPLATE.format(instruction=instruction), 
+    prompt,
     return_tensors="pt", 
     truncation=True).input_ids.cuda()
 
@@ -67,5 +73,5 @@ with torch.inference_mode():
         use_cache=True
     )
 
-print(f"Prompt:\n{instruction}\n")
-print(f"Generated Response:\n{tokenizer.batch_decode(outputs.detach().cpu().numpy(), skip_special_tokens=True)[0][len(PROMPT_TEMPLATE.format(instruction=instruction)):]}")
+print(f"Question:\n{question}\n")
+print(f"Generated Response:\n{tokenizer.batch_decode(outputs.detach().cpu().numpy(), skip_special_tokens=True)[0][len(prompt):]}")

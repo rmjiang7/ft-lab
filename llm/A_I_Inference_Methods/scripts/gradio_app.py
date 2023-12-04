@@ -10,7 +10,7 @@ from threading import Thread
 parser = argparse.ArgumentParser()
 parser.add_argument("--model_path_or_id", 
                     type=str, 
-                    default = "NousResearch/Llama-2-7b-hf", 
+                    default = "mistralai/Mistral-7B-v0.1", 
                     required = False,
                     help = "Model ID or path to saved model")
 
@@ -28,6 +28,7 @@ if args.lora_path:
         args.lora_path,
         low_cpu_mem_usage=True,
         torch_dtype=torch.float16,
+        bnb_4bit_compute_dtype=torch.float16,
         load_in_4bit=True,
     )
     tokenizer = AutoTokenizer.from_pretrained(args.lora_path)
@@ -36,6 +37,7 @@ else:
         args.model_path_or_id,
         low_cpu_mem_usage=True,
         torch_dtype=torch.float16,
+        bnb_4bit_compute_dtype=torch.float16,
         load_in_4bit=True
     )
     tokenizer = AutoTokenizer.from_pretrained(args.model_path_or_id)
