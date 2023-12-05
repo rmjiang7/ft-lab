@@ -1,6 +1,6 @@
 ### Inference Apps
 
-This directory contains a few simple starter scripts of how to use your pre-trained or fine-tuned models for inference in different application scenarios.
+This directory contains a few simple starter scripts for how to use your pre-trained or fine-tuned models for inference in different application scenarios.
 
 # Inference of LLMs
 
