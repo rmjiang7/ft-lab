@@ -3,7 +3,7 @@ import argparse
 from flask import Flask, request, Response, stream_with_context
 from peft import AutoPeftModelForCausalLM
 import torch
-from transformers import AutoModelForCausalLM, AutoTokenizer, TextIteratorStreamer
+from transformers import AutoModelForCausalLM, AutoTokenizer, TextIteratorStreamer, BitsAndBytesConfig
 from threading import Thread
 
 
@@ -26,15 +26,21 @@ parser.add_argument(
 
 args = parser.parse_args()
 
+bnb_config = BitsAndBytesConfig(
+    load_in_4bit=True,
+    bnb_4bit_use_double_quant=False,
+    bnb_4bit_quant_type="nf4",
+    bnb_4bit_compute_dtype=torch.bfloat16
+)
+
 if args.lora_path:
     # load base LLM model with PEFT Adapter
     model = AutoPeftModelForCausalLM.from_pretrained(
         args.lora_path,
         low_cpu_mem_usage=True,
         torch_dtype=torch.float16,
-        bnb_4bit_compute_dtype=torch.float16,
-        use_flash_attention_2=True,
-        load_in_4bit=True,
+        quantization_config = bnb_config,
+        use_flash_attention_2=True
     )
     tokenizer = AutoTokenizer.from_pretrained(args.lora_path)
 else:
@@ -42,9 +48,8 @@ else:
         args.model_path_or_id,
         low_cpu_mem_usage=True,
         torch_dtype=torch.float16,
-        bnb_4bit_compute_dtype=torch.float16,
         use_flash_attention_2=True,
-        load_in_4bit=True,
+        quantization_config = bnb_config
     )
     tokenizer = AutoTokenizer.from_pretrained(args.model_path_or_id)
 

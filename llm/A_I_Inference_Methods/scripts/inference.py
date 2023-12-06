@@ -2,7 +2,7 @@ import argparse
 
 from peft import AutoPeftModelForCausalLM
 import torch
-from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
 
 parser = argparse.ArgumentParser()
 
@@ -24,15 +24,21 @@ parser.add_argument(
 
 args = parser.parse_args()
 
+bnb_config = BitsAndBytesConfig(
+    load_in_4bit=True,
+    bnb_4bit_use_double_quant=False,
+    bnb_4bit_quant_type="nf4",
+    bnb_4bit_compute_dtype=torch.bfloat16
+)
+
 if args.lora_path:
     # load base LLM model with PEFT Adapter
     model = AutoPeftModelForCausalLM.from_pretrained(
         args.lora_path,
         low_cpu_mem_usage=True,
         torch_dtype=torch.float16,
-        bnb_4bit_compute_dtype=torch.float16,
-        use_flash_attention_2=True,
-        load_in_4bit=True,
+        quantization_config = bnb_config,
+        use_flash_attention_2=True
     )
     tokenizer = AutoTokenizer.from_pretrained(args.lora_path)
 else:
@@ -40,21 +46,18 @@ else:
         args.model_path_or_id,
         low_cpu_mem_usage=True,
         torch_dtype=torch.float16,
-        bnb_4bit_compute_dtype=torch.float16,
         use_flash_attention_2=True,
-        load_in_4bit=True,
+        quantization_config = bnb_config
     )
     tokenizer = AutoTokenizer.from_pretrained(args.model_path_or_id)
 
-# Prepare the input for for tokenization, attach any prompt that should be needed
-PROMPT_TEMPLATE = """### System:
-You are an information extraction system.  Use only the Context provide below to answer the Question.
 
-### Context:
+# Prepare the input for for tokenization, attach any prompt that should be needed
+PROMPT_TEMPLATE = """### Context:
 {context}
 
 ### Question:
-{question}
+Using only the context above, {question}
 
 ### Response:
 """
