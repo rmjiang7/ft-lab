@@ -4,7 +4,12 @@ from transformers import TrainingArguments
 import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
 from trl import SFTTrainer
-from peft import LoraConfig, prepare_model_for_kbit_training, get_peft_model, AutoPeftModelForCausalLM
+from peft import (
+    LoraConfig,
+    prepare_model_for_kbit_training,
+    get_peft_model,
+    AutoPeftModelForCausalLM,
+)
 
 import random
 import time
@@ -13,19 +18,22 @@ from typing import Dict
 
 
 def load_modified_dataset():
-    dataset = load_dataset("databricks/databricks-dolly-15k", split = "train")
+    dataset = load_dataset("databricks/databricks-dolly-15k", split="train")
     df = dataset.to_pandas()
-    df['keep'] = True
-    
+    df["keep"] = True
+
     # Keep entries with correct answer as well
-    df = df[(df['category'].isin(['closed_qa', 'information_extraction', 'open_qa'])) & df['keep']]
-    
+    df = df[
+        (df["category"].isin(["closed_qa", "information_extraction", "open_qa"]))
+        & df["keep"]
+    ]
+
     return Dataset.from_pandas(
-        df[['instruction', 'context', 'response']], 
-        preserve_index = False)
+        df[["instruction", "context", "response"]], preserve_index=False
+    )
 
 
-def format_instruction(sample : Dict) -> str:
+def format_instruction(sample: Dict) -> str:
     """Combine a row to a single str"""
     return f"""### Context:
 {sample['context']}
@@ -41,12 +49,12 @@ Using only the context above, {sample['instruction']}
 def train_model(
     model_id="mistralai/Mistral-7B-v0.1",
     output_dir="mistral-7b-int4-dolly",
-    is_peft = False,
+    is_peft=False,
     resume_from_checkpoint=False,
     num_train_epochs=1,
 ):
     dataset = load_modified_dataset()
-    #dataset = dataset.select(range(100))
+    # dataset = dataset.select(range(100))
 
     # Hugging Face Base Model ID
     model_id = model_id
@@ -54,17 +62,17 @@ def train_model(
         load_in_4bit=True,
         bnb_4bit_use_double_quant=False,
         bnb_4bit_quant_type="nf4",
-        bnb_4bit_compute_dtype=torch.bfloat16
+        bnb_4bit_compute_dtype=torch.bfloat16,
     )
     if is_peft:
         # load base LLM model with PEFT Adapter
-        
+
         model = AutoPeftModelForCausalLM.from_pretrained(
             model_id,
             low_cpu_mem_usage=True,
             torch_dtype=torch.float16,
             use_flash_attention_2=True,
-            quantization_config = bnb_config
+            quantization_config=bnb_config,
         )
         model = prepare_model_for_kbit_training(model)
         model._mark_only_adapters_as_trainable()
@@ -73,8 +81,8 @@ def train_model(
             model_id,
             low_cpu_mem_usage=True,
             torch_dtype=torch.float16,
-            quantization_config = bnb_config,
-            use_flash_attention_2=True
+            quantization_config=bnb_config,
+            use_flash_attention_2=True,
         )
 
         # LoRA config for QLoRA
@@ -94,18 +102,16 @@ def train_model(
                 "k_proj",
             ],
         )
-        
+
         # prepare model for training with low-precision
         model = prepare_model_for_kbit_training(model)
         model = get_peft_model(model, peft_config)
 
     model.config.pretraining_tp = 1
-    
+
     tokenizer = AutoTokenizer.from_pretrained(model_id)
     tokenizer.pad_token = tokenizer.eos_token
-    tokenizer.add_eos_token = True
     tokenizer.padding_side = "right"
-
 
     args = TrainingArguments(
         output_dir=output_dir,
@@ -113,7 +119,7 @@ def train_model(
         per_device_train_batch_size=5,  # batch size per batch
         gradient_accumulation_steps=2,  # effective batch size
         gradient_checkpointing=True,
-        gradient_checkpointing_kwargs={'use_reentrant': True},
+        gradient_checkpointing_kwargs={"use_reentrant": True},
         optim="paged_adamw_32bit",
         logging_steps=1,  # log the training error every 1 steps
         save_strategy="steps",
@@ -126,7 +132,7 @@ def train_model(
         max_grad_norm=1.0,
         warmup_steps=5,
         lr_scheduler_type="constant",
-        disable_tqdm=True
+        disable_tqdm=True,
     )
 
     # https://huggingface.co/docs/trl/sft_trainer#packing-dataset--constantlengthdataset-
