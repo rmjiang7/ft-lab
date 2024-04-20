@@ -1,5 +1,7 @@
 # Inference and Fine-Tuning Labs
 
+## This repo is no longer being maintained and has been moved [here](https://github.com/gen-ai-trainings/ft-lab/).  Please follow that repo for the latest updates.
+
 This repo contains a few brief examples of working with Generative AI Models. 
 
 1. llm
